@@ -83,29 +83,49 @@ public class YourService extends KiboRpcService {
         return computeUnitVector(V);
     }
 
+   // public double[] findTargetPoint(double x, double y, double z,
+   //                                 double qx, double qy, double qz, double qw) {
+   //     Log.d(TAG,"findTargetPoint");
+   //     double[] V = quaternionToVector(qx, qy, qz, qw);
+   //     double[] T = new double[3];
+   //     // Ty = -10.2
+   //     T[1] = -10.2;
+   //     // calculate vector size
+   //     double size = Math.abs(T[1] - y);
+   //     // calulate Tx, Tz
+   //     T[0] = x + size * V[0];
+   //     T[2] = z + size * V[2];
+   //     // offset from KOZ
+   //     T[1] += 0.6;
+
+   //     return T;
+   // }
+    // Edit Bias
     public double[] findTargetPoint(double x, double y, double z,
-                                    double qx, double qy, double qz, double qw) {
-        double[] direction = quaternionToVector(qx, qy, qz, qw);
-        Log.d(TAG,"find Target0");
-        //double[] direction = {qx,qy,qz};
-        Log.d(TAG,"find Target");
-        double[] target = new double[3];
+                                  double qx, double qy, double qz, double qw) {
+        Log.d(TAG, "findTargetPoint");
+        double[] V = quaternionToVector(qx, qy, qz, qw);
+        double[] T = new double[3];
         // Ty = -10.2
-        target[1] = -10.2;
+        T[1] = -10.2;
         // calculate vector size
-        double size = (target[1] - y) / direction[1];
+        double size = Math.abs(T[1] - y);
         // calulate Tx, Tz
-        target[0] = x + size * direction[0];
-        target[2] = z + size * direction[2];
-        // remove offset
-        target[1] += 0.6;
+        T[0] = x + size * V[0];
+        T[2] = z + size * V[2];
+        // offset from KOZ
+        T[1] += 0.6;
 
-        return target;
+        // calculate offset x, z to target point
+        double robotCameraOffsetY = Math.abs(-0.0422 - 0.0572);
+        double robotCameraOffsetZ = Math.abs(-0.0826 - (-0.1111));
+        double offsetX = 0.1 * Math.sqrt(2) - robotCameraOffsetY;
+        double offsetZ = 0.1 * Math.sqrt(2) + robotCameraOffsetZ;
+        T[0] += offsetX;
+        T[2] += offsetZ;
+
+        return T;
     }
-
-
-
-
     @Override
     protected void runPlan1(){
         runPlan2();
@@ -234,18 +254,23 @@ public class YourService extends KiboRpcService {
         api.judgeSendStart();
 
         Log.d(TAG,"start scan 1");
-        //moveToWrapper2(11.52 + navPox, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 0, 1);
         moveToWrapper2(11.52 + navPox, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 1,0 );
         p1_1 = scanBarcode(11.52, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 1, 0, 0, "value p1-1","side",1);
         Log.d(TAG,"p1_1 = " + p1_1);
         Log.d(TAG,"start scan 2");
 
         Log.d(TAG,"start detect 3");
-        moveToWrapper2(11, -5.5, 4.33, 0, 0.7071068, 0, -0.7071068);
-        String p1_3 = scanBarcode(11, -5.5, 4.33, 0, 0.7071068, 0, -0.7071068,2,"value p1-3","flow",1);
+        //moveToWrapper2(11, -5.5, 4.33, -0.7071068, 0, 0.7071068,0);
+        //String p1_3 = scanBarcode(11, -5.5, 4.33, -0.7071068, 0, 0.7071068, 0,2,"value p1-3","flow",1);
+        //old
+        moveToWrapper2(11, -5.5, 4.33, 0, -0.7071068, 0, 0.7071068);
+        String p1_3 = scanBarcode(11, -5.5, 4.33, 0, -0.7071068, 0, 0.7071068,2,"value p1-3","flow",1);
         Log.d(TAG,"p1_3 = " + p1_3);
         Log.d(TAG,"finish scan 3");
 
+        //moveToWrapper2(11 + navPox, -6 + navPoy, 5.55 + navPoz, -0.7071068, 0, 0.7071068, 0);
+        //String p1_2 = scanBarcode(11 + navPox, -6 + navPoy, 5.55 + navPoz, -0.7071068, 0, 0.7071068, 0,1,"values p1-2","ground",0);
+        //old
         moveToWrapper2(11 + navPox, -6 + navPoy, 5.55 + navPoz, 0, -0.7071068, 0, 0.7071068);
         String p1_2 = scanBarcode(11 + navPox, -6 + navPoy, 5.55 + navPoz, 0, -0.7071068, 0, 0.7071068,1,"values p1-2","ground",0);
         Log.d(TAG,"p1_2 = " + p1_2);
@@ -254,36 +279,68 @@ public class YourService extends KiboRpcService {
 
 
         Log.d(TAG,"movePass1");
-        moveToWrapper2(10.27, -6.8, 5.0, 0, 0, 0, 1);
+        moveToWrapper2(10.27, -6.8, 5.4, 0, 0, 0, 1);
         Log.d(TAG,"movePass2");
-        moveToWrapper2(11.2, -6.8, 5.0, 0, 0, -0.7071068, 0.7071068);
+        moveToWrapper2(11, -6.8, 5.4, 0, 0, -0.7071068, 0.7071068);
         Log.d(TAG,"finishMovePass");
+        //old
+        //Log.d(TAG,"movePass1");
+        //moveToWrapper2(10.27, -6.8, 5.0, 0, 0, 0, 1);
+        //Log.d(TAG,"movePass2");
+        //moveToWrapper2(11.2, -6.8, 5.0, 0, 0, -0.7071068, 0.7071068);
+        //Log.d(TAG,"finishMovePass");
 
-        moveToWrapper2(11.5, -8, 5, 0, 0, 1, 0);
-        String p2_2 = scanBarcode(11.5, -8, 5, 0, 0, 1, 0,4,"value p2-2","",1);
-        Log.d(TAG,"finnish scan 2_2") ;
-        Log.d(TAG,"p2_2 = " + p2_2);
-
-        moveToWrapper2(10.30, -7.5, 4.7, 0, 0, 1, 0);
-        String p2_1 = scanBarcode(10.30, -7.5, 4.7, 0, 0, 1, 0,3,"value p2-1","",0);
-        Log.d(TAG,"finnish scan 2_1") ;
-        Log.d(TAG,"p2_1 = " + p2_1);
+        //Log.d(TAG,"movePass1");
+        //moveToWrapper2(10.27, -6.8, 5.4, 0, 0, 0, 1);
+        //Log.d(TAG,"movePass2");
+        //moveToWrapper2(11, -6.8, 5.4, 0, 0, -0.7071068, 0.7071068);
+        //Log.d(TAG,"finishMovePass");
 
         moveToWrapper2(11, -7.7, 5.55, 0, -0.7071068, 0, 0.7071068);
         String p2_3 = scanBarcode(11, -7.7, 5.55, 0, -0.7071068, 0, 0.7071068,5,"value p2-3","ground",0);
         Log.d(TAG,"finnish scan 2_3") ;
         Log.d(TAG,"p2_3 = " + p2_3);
-        Log.d(TAG,"finnish phase 2") ;
+        //Log.d(TAG,"finnish phase 2");
+        //old
+        //moveToWrapper2(11.5, -8, 5, 0, 0, 1, 0);
+        //String p2_2 = scanBarcode(11.5, -8, 5, 0, 0, 1, 0,4,"value p2-2","",1);
+        //Log.d(TAG,"finnish scan 2_2") ;
+        //Log.d(TAG,"p2_2 = " + p2_2);
+
+
+
+        moveToWrapper2(10.30, -7.5, 4.7, 0, 0, 0, 1);
+        String p2_1 = scanBarcode(10.30, -7.5, 4.7, 0, 0, 0, 1,3,"value p2-1","",1);
+        Log.d(TAG,"finnish scan 2_1") ;
+        Log.d(TAG,"p2_1 = " + p2_1);
+        //old
+       // moveToWrapper2(10.30, -7.5, 4.7, 0, 0, 1, 0);
+       // String p2_1 = scanBarcode(10.30, -7.5, 4.7, 0, 0, 1, 0,3,"value p2-1","",0);
+       // Log.d(TAG,"finnish scan 2_1") ;
+       // Log.d(TAG,"p2_1 = " + p2_1);
+        Log.d(TAG,"p2_2");
+        moveToWrapper2(11.5, -8, 5, 0, 0, 0, 1);
+        String p2_2 = scanBarcode(11.5, -8, 5, 0, 0, 0, 1,4,"value p2-2","",0);
+        Log.d(TAG,"finnish scan 2_2") ;
+        Log.d(TAG,"p2_2 = " + p2_2);
+        //old
+       // moveToWrapper2(11, -7.7, 5.55, 0, -0.7071068, 0, 0.7071068);
+       // String p2_3 = scanBarcode(11, -7.7, 5.55, 0, -0.7071068, 0, 0.7071068,5,"value p2-3","ground",0);
+       // Log.d(TAG,"finnish scan 2_3") ;
+       // Log.d(TAG,"p2_3 = " + p2_3);
+       // Log.d(TAG,"finnish phase 2") ;
 
         //moveToWrapper2(10.65, -9.2, 5.25, 0, 0, -0.7071068,  0.7071068);
-
-        moveToWrapper2(11, -7.7, 4.5, 0, 0, -0.7071068,  0.7071068);
         Log.d(TAG,"b1");
-        moveToWrapper2(11, -9.2, 4.5, 0, 0, -0.7071068,  0.7071068);
-        Log.d(TAG,"b2");
+        moveToWrapper2(11.2, -9.2, 5, 0, 0, -0.7071068, 0.7071068);
+        //old
+        //moveToWrapper2(11, -7.7, 4.5, 0, 0, -0.7071068,  0.7071068);
+        //Log.d(TAG,"b1");
+        //moveToWrapper2(11, -9.2, 4.5, 0, 0, -0.7071068,  0.7071068);
+        //Log.d(TAG,"b2");
 
         //moveToWrapper2(11, -7.7, 4.5, 0, 0, -0.7071068,  0.7071068);
-        Log.d(TAG,"b1");
+
         //moveToWrapper2(11, -9.2, 4.5, 0, 0, -0.7071068,  0.7071068);
         Log.d(TAG,"b2");
         //Double.p
@@ -294,6 +351,7 @@ public class YourService extends KiboRpcService {
         double doubleP2_2 = 0;
         double doubleP2_3 = 0;
         Log.d(TAG,"b3");
+        double status = -1.0;
         try {
             Log.d(TAG,"b4");
             doubleP1_1 = Double.parseDouble(p1_1.split(" ")[1]);
@@ -310,13 +368,10 @@ public class YourService extends KiboRpcService {
             //moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,0, 0, -0.7071068, 0.7071068);
 
             Log.d(TAG,"DetectAR");
-            double status = detectARMarker2();
+            status = detectARMarker2();
             if (status == -1.0){
                 Log.d(TAG,"Not correct W");
-                // moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
-                //         doubleP2_2,doubleP2_3,-1.0 * findW2(doubleP2_1,
-                //                 doubleP2_2,doubleP2_3));
-                detectARMarker2();
+                status = detectARMarker2();
             }
             Log.d(TAG,"DetectAR2");
 
@@ -325,6 +380,9 @@ public class YourService extends KiboRpcService {
             Log.d(TAG,"ERROR!!" + e.getMessage());
         }
         Log.d(TAG,"Move Target");
+        if (status == -1.0){
+            detectARMarker2();
+        }
         double[] target = findTargetPoint(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
                 doubleP2_2,doubleP2_3,findW2(doubleP2_1,
                         doubleP2_2,doubleP2_3));
