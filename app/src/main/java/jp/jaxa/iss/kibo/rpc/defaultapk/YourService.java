@@ -86,6 +86,9 @@ public class YourService extends KiboRpcService {
     public double[] findTargetPoint(double x, double y, double z,
                                     double qx, double qy, double qz, double qw) {
         double[] direction = quaternionToVector(qx, qy, qz, qw);
+        Log.d(TAG,"find Target0");
+        //double[] direction = {qx,qy,qz};
+        Log.d(TAG,"find Target");
         double[] target = new double[3];
         // Ty = -10.2
         target[1] = -10.2;
@@ -105,7 +108,8 @@ public class YourService extends KiboRpcService {
 
     @Override
     protected void runPlan1(){
-
+        runPlan2();
+        /*
         String p1_1 = "";
         Log.d(TAG,"Start Simulator");
         int w = 1280, h = 960;
@@ -118,8 +122,8 @@ public class YourService extends KiboRpcService {
         api.judgeSendStart();
 
         Log.d(TAG,"start scan 1");
+        //moveToWrapper2(11.52 + navPox, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 0, 1);
         moveToWrapper2(11.52 + navPox, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 0, 1);
-
         p1_1 = scanBarcode(11.52, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 0, 1, 0, "value p1-1","side");
         Log.d(TAG,"p1_1 = " + p1_1);
         Log.d(TAG,"start scan 2");
@@ -166,32 +170,156 @@ public class YourService extends KiboRpcService {
         moveToWrapper2(11, -9.2, 4.5, 0, 0, -0.7071068,  0.7071068);
         Log.d(TAG,"b2");
         //Double.p
-        double doubleP1_1 = Double.parseDouble(p1_1.split(" ")[1]);
-        double doubleP1_2 = Double.parseDouble(p1_2.split(" ")[1]);
-        double doubleP1_3 = Double.parseDouble(p1_3.split(" ")[1]);
-        double doubleP2_1 = Double.parseDouble(p2_1.split(" ")[1]);
-        double doubleP2_2 = Double.parseDouble(p2_2.split(" ")[1]);
-        double doubleP2_3 = Double.parseDouble(p2_3.split(" ")[1]);
+        double doubleP1_1 = 0;
+        double doubleP1_2 = 0;
+        double doubleP1_3 = 0;
+        double doubleP2_1 = 0;
+        double doubleP2_2 = 0;
+        double doubleP2_3 = 0;
+        Log.d(TAG,"b3");
         try {
-
+            Log.d(TAG,"b4");
+            doubleP1_1 = Double.parseDouble(p1_1.split(" ")[1]);
+            doubleP1_2 = Double.parseDouble(p1_2.split(" ")[1]);
+            doubleP1_3 = Double.parseDouble(p1_3.split(" ")[1]);
+            doubleP2_1 = Double.parseDouble(p2_1.split(" ")[1]);
+            doubleP2_2 = Double.parseDouble(p2_2.split(" ")[1]);
+            doubleP2_3 = Double.parseDouble(p2_3.split(" ")[1]);
+            Log.d(TAG,"b5");
             Log.d(TAG,"" + findW2(doubleP2_1,doubleP2_2,doubleP2_3));
-            moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
-                    doubleP2_2,doubleP2_3,findW2(doubleP2_1,
-                            doubleP2_2,doubleP2_3));
+
+            //moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
+            //        doubleP2_2,doubleP2_3,findW2(doubleP2_1,doubleP2_2,doubleP2_3));
+            moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,0, 0, -0.7071068, 0.7071068);
+
             Log.d(TAG,"DetectAR");
             double status = detectARMarker2();
             if (status == -1.0){
                 Log.d(TAG,"Not correct W");
-                moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
-                        doubleP2_2,doubleP2_3,-1.0 * findW2(doubleP2_1,
-                                doubleP2_2,doubleP2_3));
-                status = detectARMarker2();
+               // moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
+               //         doubleP2_2,doubleP2_3,-1.0 * findW2(doubleP2_1,
+               //                 doubleP2_2,doubleP2_3));
+                detectARMarker2();
             }
             Log.d(TAG,"DetectAR2");
 
-            //String p3 = scanBarcode(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
-             //       doubleP2_2,doubleP2_3,0,5,"P3","");
-            //Log.d(TAG,"P3 = " + p3.toString());
+        }
+        catch (Exception e){
+            Log.d(TAG,"ERROR!!" + e.getMessage());
+        }
+        Log.d(TAG,"Move Target");
+        double[] target = findTargetPoint(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
+                doubleP2_2,doubleP2_3,findW2(doubleP2_1,
+                        doubleP2_2,doubleP2_3));
+        Log.d(TAG,"Target values = " + Double.toString(target[0])  + " "+ Double.toString(target[1])
+                + " " +  Double.toString(target[2]));
+        //moveToWrapper2(target[0],target[1],target[2],0, 0, -0.7071068, 0.7071068);
+
+        api.laserControl(true);
+        api.judgeSendFinishISS();
+        api.judgeSendFinishSimulation();
+         */
+    }
+    @Override
+    protected void runPlan2(){
+        String p1_1 = "";
+        Log.d(TAG,"Start Simulator");
+        int w = 1280, h = 960;
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
+        Bitmap bmp = Bitmap.createBitmap(w, h, conf); // this creates a MUTABLE bitmap
+        //mulScanPrepare(bmp);
+        detectBarCode(bmp);
+        intArray = new int[1280 * 960];
+        Log.d(TAG,"Finish prepare");
+        api.judgeSendStart();
+
+        Log.d(TAG,"start scan 1");
+        //moveToWrapper2(11.52 + navPox, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 0, 1);
+        moveToWrapper2(11.52 + navPox, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 1,0 );
+        p1_1 = scanBarcode(11.52, -5.69 + navPoy, 4.5 + navPoz, 0, 0, 1, 0, 0, "value p1-1","side",1);
+        Log.d(TAG,"p1_1 = " + p1_1);
+        Log.d(TAG,"start scan 2");
+
+        Log.d(TAG,"start detect 3");
+        moveToWrapper2(11, -5.5, 4.33, 0, 0.7071068, 0, -0.7071068);
+        String p1_3 = scanBarcode(11, -5.5, 4.33, 0, 0.7071068, 0, -0.7071068,2,"value p1-3","flow",1);
+        Log.d(TAG,"p1_3 = " + p1_3);
+        Log.d(TAG,"finish scan 3");
+
+        moveToWrapper2(11 + navPox, -6 + navPoy, 5.55 + navPoz, 0, -0.7071068, 0, 0.7071068);
+        String p1_2 = scanBarcode(11 + navPox, -6 + navPoy, 5.55 + navPoz, 0, -0.7071068, 0, 0.7071068,1,"values p1-2","ground",0);
+        Log.d(TAG,"p1_2 = " + p1_2);
+        Log.d(TAG,"finish scan 2");
+        Log.d(TAG,"start scan 3");
+
+
+        Log.d(TAG,"movePass1");
+        moveToWrapper2(10.27, -6.8, 5.0, 0, 0, 0, 1);
+        Log.d(TAG,"movePass2");
+        moveToWrapper2(11.2, -6.8, 5.0, 0, 0, -0.7071068, 0.7071068);
+        Log.d(TAG,"finishMovePass");
+
+        moveToWrapper2(11.5, -8, 5, 0, 0, 1, 0);
+        String p2_2 = scanBarcode(11.5, -8, 5, 0, 0, 1, 0,4,"value p2-2","",1);
+        Log.d(TAG,"finnish scan 2_2") ;
+        Log.d(TAG,"p2_2 = " + p2_2);
+
+        moveToWrapper2(10.30, -7.5, 4.7, 0, 0, 1, 0);
+        String p2_1 = scanBarcode(10.30, -7.5, 4.7, 0, 0, 1, 0,3,"value p2-1","",0);
+        Log.d(TAG,"finnish scan 2_1") ;
+        Log.d(TAG,"p2_1 = " + p2_1);
+
+        moveToWrapper2(11, -7.7, 5.55, 0, -0.7071068, 0, 0.7071068);
+        String p2_3 = scanBarcode(11, -7.7, 5.55, 0, -0.7071068, 0, 0.7071068,5,"value p2-3","ground",0);
+        Log.d(TAG,"finnish scan 2_3") ;
+        Log.d(TAG,"p2_3 = " + p2_3);
+        Log.d(TAG,"finnish phase 2") ;
+
+        //moveToWrapper2(10.65, -9.2, 5.25, 0, 0, -0.7071068,  0.7071068);
+
+        moveToWrapper2(11, -7.7, 4.5, 0, 0, -0.7071068,  0.7071068);
+        Log.d(TAG,"b1");
+        moveToWrapper2(11, -9.2, 4.5, 0, 0, -0.7071068,  0.7071068);
+        Log.d(TAG,"b2");
+
+        //moveToWrapper2(11, -7.7, 4.5, 0, 0, -0.7071068,  0.7071068);
+        Log.d(TAG,"b1");
+        //moveToWrapper2(11, -9.2, 4.5, 0, 0, -0.7071068,  0.7071068);
+        Log.d(TAG,"b2");
+        //Double.p
+        double doubleP1_1 = 0;
+        double doubleP1_2 = 0;
+        double doubleP1_3 = 0;
+        double doubleP2_1 = 0;
+        double doubleP2_2 = 0;
+        double doubleP2_3 = 0;
+        Log.d(TAG,"b3");
+        try {
+            Log.d(TAG,"b4");
+            doubleP1_1 = Double.parseDouble(p1_1.split(" ")[1]);
+            doubleP1_2 = Double.parseDouble(p1_2.split(" ")[1]);
+            doubleP1_3 = Double.parseDouble(p1_3.split(" ")[1]);
+            doubleP2_1 = Double.parseDouble(p2_1.split(" ")[1]);
+            doubleP2_2 = Double.parseDouble(p2_2.split(" ")[1]);
+            doubleP2_3 = Double.parseDouble(p2_3.split(" ")[1]);
+            Log.d(TAG,"b5");
+            Log.d(TAG,"" + findW2(doubleP2_1,doubleP2_2,doubleP2_3));
+
+            moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
+                    doubleP2_2,doubleP2_3,findW2(doubleP2_1,doubleP2_2,doubleP2_3));
+            //moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,0, 0, -0.7071068, 0.7071068);
+
+            Log.d(TAG,"DetectAR");
+            double status = detectARMarker2();
+            if (status == -1.0){
+                Log.d(TAG,"Not correct W");
+                // moveToWrapper2(doubleP1_1,doubleP1_2,doubleP1_3,doubleP2_1,
+                //         doubleP2_2,doubleP2_3,-1.0 * findW2(doubleP2_1,
+                //                 doubleP2_2,doubleP2_3));
+                detectARMarker2();
+            }
+            Log.d(TAG,"DetectAR2");
+
         }
         catch (Exception e){
             Log.d(TAG,"ERROR!!" + e.getMessage());
@@ -207,9 +335,6 @@ public class YourService extends KiboRpcService {
         api.laserControl(true);
         api.judgeSendFinishISS();
         api.judgeSendFinishSimulation();
-    }
-    @Override
-    protected void runPlan2(){
 
     }
     @Override
@@ -222,7 +347,8 @@ public class YourService extends KiboRpcService {
         return Math.asin(findmagnitude(qx,qy,qz));
     }
     private double findW2(double qx,double qy,double qz){
-        return Math.sqrt(1 - Math.pow(qx,2) + Math.pow(qy,2) + Math.pow(qz,2));
+        Log.d(TAG,"findw2");
+        return Math.sqrt(1 - (Math.pow(qx,2) + Math.pow(qy,2) + Math.pow(qz,2)));
     }
     private void moveLittle(double pos_x, double pos_y, double pos_z,
                             double qua_x, double qua_y, double qua_z,
@@ -262,30 +388,8 @@ public class YourService extends KiboRpcService {
         }
         return  result;
     }
-    private void scanWhenNearQr(double pos_x, double pos_y, double pos_z,
-                                double qua_x, double qua_y, double qua_z,
-                                double qua_w){
 
-    }
-    private boolean scanWhenNear(double pos_x, double pos_y, double pos_z,
-                                 double qua_x, double qua_y, double qua_z,
-                                 double qua_w){
-        boolean isNear = false;
-        double x =  api.getTrustedRobotKinematics().getPosition().getX();
-        double y =  api.getTrustedRobotKinematics().getPosition().getY();
-        double z =  api.getTrustedRobotKinematics().getPosition().getZ();
-        double qx = api.getTrustedRobotKinematics().getOrientation().getX();
-        double qy = api.getTrustedRobotKinematics().getOrientation().getY();
-        double qz = api.getTrustedRobotKinematics().getOrientation().getZ();
-        double qw = api.getTrustedRobotKinematics().getOrientation().getW();
 
-        double mean = (area(pos_x,x) + area(pos_y,y) + area(pos_z,z))/3;
-        if (mean < 0.1){
-            isNear = true;
-        }
-        return isNear;
-
-    }
     private boolean onlyScan(int no){
         Bitmap snapshot = api.getBitmapNavCam();
         String value = detectBarCode(snapshot);
@@ -317,6 +421,18 @@ public class YourService extends KiboRpcService {
         Bitmap snapshot = null;
         while (value == null && loop < maxLoop){
             snapshot = api.getBitmapNavCam();
+            value = detectBarCode(snapshot);
+            loop++;
+        }
+        return value;
+    }
+    private String mulScanDock(){
+        int maxLoop = 3;
+        int loop = 0;
+        String value = null;
+        Bitmap snapshot = null;
+        while (value == null && loop < maxLoop){
+            snapshot = api.getBitmapDockCam();
             value = detectBarCode(snapshot);
             loop++;
         }
@@ -407,15 +523,15 @@ public class YourService extends KiboRpcService {
 
     private String scanBarcode(double pos_x, double pos_y, double pos_z,
                                double qua_x, double qua_y, double qua_z,
-                               double qua_w,int no,String title,String dimen){
-        String value = scanBarcode2(pos_x,pos_y,pos_z,qua_x,qua_y,qua_z,qua_w,no,dimen);
+                               double qua_w,int no,String title,String dimen,int camera){
+        String value = scanBarcode2(pos_x,pos_y,pos_z,qua_x,qua_y,qua_z,qua_w,no,dimen,camera);
         Log.d(TAG,title);
         return value;
     }
 
     private String scanBarcode2(double pos_x, double pos_y, double pos_z,
                                 double qua_x, double qua_y, double qua_z,
-                                double qua_w,int no,String dimen){
+                                double qua_w,int no,String dimen,int camera){
         Result result = null;
         Point updatePoint = new Point();
         Quaternion updateQuaternion = new Quaternion();
@@ -424,11 +540,13 @@ public class YourService extends KiboRpcService {
         Bitmap snapshot = null;
         String value = null;
         printAllPosition("position Scan");
-        //snapshot = api.getBitmapNavCam();
-        //value = detectBarCode(snapshot);
-        value = mulScan();
+        if (camera == 0) {
+            value = mulScan();
+        }
+        else{
+            value = mulScanDock();
+        }
         while (value == null && loop < loopMax) {
-            //moveToWrapper2(pos_x,pos_y,pos_z,qua_x,qua_y,qua_z,qua_w);
             Log.d(TAG,"Confidence : "+api.getTrustedRobotKinematics().getConfidence());
             double x = api.getTrustedRobotKinematics().getPosition().getX();
             double y = api.getTrustedRobotKinematics().getPosition().getY();
@@ -447,8 +565,12 @@ public class YourService extends KiboRpcService {
                     updateQuaternion.getZ(),updateQuaternion.getW());
             //snapshot = api.getBitmapNavCam();
             //value = detectBarCode(snapshot);
-            value = mulScan();
-
+            if (camera == 0) {
+                value = mulScan();
+            }
+            else{
+                value = mulScanDock();
+            }
             if (value == null)
             {
                 if (dimen.equals("side")) {
@@ -477,6 +599,7 @@ public class YourService extends KiboRpcService {
         }
         return value;
     }
+
 
     private void printPosition(String label,double x,double y,double z
             , double qx,double qy, double qz, double qw){
@@ -513,12 +636,7 @@ public class YourService extends KiboRpcService {
         Log.d(TAG,"IMU Angular" + api.getImu().getAngularVelocity().toString());
         Log.d(TAG,"IMU Orientation" + api.getImu().getOrientation().toString());
     }
-    private String Convert(Mat imgs){
-        //QRCodeDetector detectAndDecode = new QRCodeDetector();
-        //String value = detectAndDecode.detectAndDecode(imgs);
-        //return value;
-        return "";
-    }
+
 
     String detectBarCode(Bitmap bitmap) {
         Log.d(TAG,"Sc1");
@@ -574,45 +692,5 @@ public class YourService extends KiboRpcService {
             Log.d(TAG,"round "  + Long.toString(Math.round(makerID)));
         }
         return makerID;
-    }
-    private boolean detectARMarker(){
-        Log.d(TAG,"Detect AR");
-        Boolean status = false;
-        Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
-        List<Mat> corners = new ArrayList<>();
-        Mat markerIds = new Mat();
-        String value = null;
-        String value2 = null;
-        Mat inputImage = null;
-        DetectorParameters parameters = null;
-        int maxLoop = 5;
-        int loop = 0;
-        while (value == null && loop < maxLoop) {
-            try {
-                inputImage = api.getMatNavCam();
-                parameters = DetectorParameters.create();
-                Aruco.detectMarkers(inputImage, dictionary, corners, markerIds, parameters);
-                value = String.valueOf(markerIds.get(0,0)[0]);
-                value2 = String.valueOf(markerIds.nativeObj);
-                Log.d(TAG,"value in loop " +  value);
-                Log.d(TAG,"value2 in loop " +  value2);
-            }
-            catch (Exception e){
-                Log.d(TAG,"AR Error");
-                Log.d(TAG,e.getMessage());
-            }
-            loop++;
-        }
-        if (value != null) {
-            api.judgeSendDiscoveredAR(value);
-            api.judgeSendDiscoveredAR(value2);
-            status = true;
-        }
-        else {
-            status = false;
-        }
-        Log.d(TAG,"value = " + value);
-        Log.d(TAG,"value2 = " + value2);
-        return status;
     }
 }
